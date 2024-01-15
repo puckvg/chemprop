@@ -12,7 +12,7 @@ from chemprop.args import HyperoptArgs
 from chemprop.constants import HYPEROPT_LOGGER_NAME
 from chemprop.models import MoleculeModel
 from chemprop.nn_utils import param_count
-from chemprop.train import cross_validate, run_training
+from chemprop.train import cross_validate, run_training, run_first_k_fold
 from chemprop.utils import create_logger, makedirs, timeit
 from chemprop.hyperopt_utils import merge_trials, load_trials, save_trials, \
     get_hyperopt_seed, load_manual_trials, build_search_space, save_config
@@ -97,7 +97,7 @@ def hyperopt(args: HyperoptArgs) -> None:
             hyper_args.final_lr = hyperparams["max_lr"] * hyperparams["final_lr_ratio"]
 
         # Cross validate
-        mean_score, std_score = cross_validate(args=hyper_args, train_func=run_training)
+        mean_score, std_score = run_first_k_fold(args=hyper_args, train_func=run_training)
 
         # Record results
         temp_model = MoleculeModel(hyper_args)
