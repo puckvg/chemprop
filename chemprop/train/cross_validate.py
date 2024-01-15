@@ -133,7 +133,10 @@ def run_first_k_fold(args: TrainArgs,
 
     # Report scores for each fold
     contains_nan_scores = False
-    for fold_num in range(args.num_folds):
+    for i, fold_num in enumrate(range(args.num_folds)):
+        #CHANGED skip since will only have results for one fold
+        if i > 0:
+          continue
         for metric, scores in all_scores.items():
             info(f'\tSeed {init_seed + fold_num} ==> test {metric} = {multitask_mean(scores[fold_num], metric):.6f}')
 
