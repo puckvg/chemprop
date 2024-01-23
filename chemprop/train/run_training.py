@@ -1,3 +1,5 @@
+from timeit import default_timer as timer
+
 import json
 from logging import Logger
 import os
@@ -290,8 +292,10 @@ def run_training(args: TrainArgs,
         # Run training
         best_score = float('inf') if args.minimize_score else -float('inf')
         best_epoch, n_iter = 0, 0
+        train_time = 0.0
         for epoch in trange(args.epochs):
             debug(f'Epoch {epoch}')
+            start = timer()
             n_iter = train(
                 model=model,
                 data_loader=train_data_loader,
@@ -304,8 +308,12 @@ def run_training(args: TrainArgs,
                 logger=logger,
                 writer=writer
             )
+            end = timer()
+            train_time_epoch = end - start 
+            train_time += train_time_epoch
             if isinstance(scheduler, ExponentialLR):
                 scheduler.step()
+
             val_scores = evaluate(
                 model=model,
                 data_loader=val_data_loader,
@@ -341,15 +349,20 @@ def run_training(args: TrainArgs,
         info(f'Model {model_idx} best validation {args.metric} = {best_score:.6f} on epoch {best_epoch}')
         model = load_checkpoint(os.path.join(save_dir, MODEL_FILE_NAME), device=args.device, logger=logger)
 
+        printf("Elapsed train time {train_time}")
         if empty_test_set:
             info(f'Model {model_idx} provided with no test set, no metric evaluation will be performed.')
         else:
+            start = timer()
             test_preds = predict(
                 model=model,
                 data_loader=test_data_loader,
                 scaler=scaler,
                 atom_bond_scaler=atom_bond_scaler
             )
+            end = timer()
+            test_time = end - start 
+            print(f"Elapsed test time {test_time}")
             test_scores = evaluate_predictions(
                 preds=test_preds,
                 targets=test_targets,
