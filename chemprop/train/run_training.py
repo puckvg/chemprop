@@ -221,6 +221,7 @@ def run_training(args: TrainArgs,
         num_workers = args.num_workers
 
     # Create data loaders
+    start_train_dataloader = timer()
     train_data_loader = MoleculeDataLoader(
         dataset=train_data,
         batch_size=args.batch_size,
@@ -234,11 +235,16 @@ def run_training(args: TrainArgs,
         batch_size=args.batch_size,
         num_workers=num_workers
     )
+    end_train_dataloader = timer()
+    print(f"Train dataloader creation {end_train_dataloader - start_train_dataloader}")
+    start_test_dataloader = timer()
     test_data_loader = MoleculeDataLoader(
         dataset=test_data,
         batch_size=args.batch_size,
         num_workers=num_workers
     )
+    end_test_dataloader = timer()
+    print(f"Test dataloader creation {end_test_dataloader - start_test_dataloader}")
 
     if args.class_balance:
         debug(f'With class_balance, effective train size = {train_data_loader.iter_size:,}')
